@@ -12,10 +12,10 @@ public class Sudoku {
     HashMap<Integer, HashSet<Integer>> squares = new HashMap<>();
     SudokuSolver controller;
 
-    public Sudoku(int size, int inner, SudokuSolver solver) {
+    public Sudoku(int size, SudokuSolver solver) {
         board = new int[size][size];
         SIZE = size;
-        this.INNER = inner;
+        this.INNER = 3; // TODO: SORT OUT THE DIMENSIONS OF 12 x 12 and 16 x 16!!
         controller = solver;
         initBoard();
     }
@@ -45,6 +45,8 @@ public class Sudoku {
     }
 
     public void removeFromBoard(int i, int j) throws IndexOutOfBoundsException {
+        if (board[i][j] == 0)
+            return;
         removeFromChecks(i, j);
         board[i][j] = 0;
     }

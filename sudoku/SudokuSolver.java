@@ -7,62 +7,71 @@ public class SudokuSolver {
     public SudokuSolver() {
         SIZE = 9;
         GUI = new SolverGUI(this, SIZE);
-        sudoku = new Sudoku(9, 3, this);
+        sudoku = new Sudoku(SIZE, this);
     }
 
     public void run() {
         GUI.openWindow();
+        openPopUp("Test av Pop-Up", "Dette er bare en liten test av pop-up-en!");
     }
 
-    public int setValue(int val, int id) {
+    public boolean setValue(int val, int id) {
         int row = id / SIZE;
         int col = id % SIZE;
-        if (sudoku.board[row][col] != 0) {
-            sudoku.removeFromBoard(row, col); // TODO: Is the check nessecary? Should be in removeFromBoard?
-        }
+        sudoku.removeFromBoard(row, col);
         try {
             sudoku.addToBoard(val, row, col);
         } catch (InvalidMoveException e) {
             System.out.println(e.getMessage());
-            return id;
+            return false;
         }
-        return 0;
+        return true;
     }
 
-    // Clears a value from GUI
+    // Writes a value to GUI
     public void writeValue(int val, int i, int j) {
         GUI.writeValue(getIndex(i, j), val);
     }
 
+    // Clears a value from GUI
     public void clearValue(int i, int j) {
         GUI.clearValue(getIndex(i, j));
     }
 
-    public void solve() {
-        sudoku.solveSudoku();
-    }
-
+    // Reloads the GUI with a new sudoku board
     public void clear() {
         GUI.close();
         GUI = new SolverGUI(this, SIZE);
-        sudoku = new Sudoku(SIZE, 3, this);
+        sudoku = new Sudoku(SIZE, this);
         run();
     }
 
-    public void showResults(boolean solved, Double time) {
-        if (solved)
-            System.out.println(time);
-        else
-            System.out.println("Unable to solve");
-        // TODO: Show result in GUI
-    }
-
+    // Changes the board size and clears the board
     public void changeSize(int size) {
         SIZE = size;
         clear();
     }
 
+    // Solves the sudoku
+    public void solve() {
+        sudoku.solveSudoku();
+    }
 
+    // TODO: Show a pop-up with solving time.
+    public void showResults(boolean solved, Double time) {
+        if (solved)
+            System.out.println(time);
+        else
+            System.out.println("Unable to solve");
+    }
+
+    // TODO: Display a pop-up with a message!
+    public void openPopUp(String title, String message) {
+        PopUp popUp = new PopUp(title, message);
+        popUp.openPopUp();
+    } 
+
+    // Converts from row and col to 1D array index
     private int getIndex(int i, int j) {
         return i * SIZE + j;
     }

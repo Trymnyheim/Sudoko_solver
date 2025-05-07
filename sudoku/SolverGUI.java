@@ -52,14 +52,17 @@ public class SolverGUI {
                             new JButton("12 x 12"),
                             new JButton("16 x 16") };
         for (JButton button : sizes) {
-            button.addActionListener(new SetSize(button.getText())); 
+            button.addActionListener(new SetSize(button.getText()));
+            button.setFont(new Font("Ariel", Font.BOLD, 16));
             options.add(button);
         }
 
         JButton solve = new JButton("Solve");
         solve.addActionListener(onSolve);
+        solve.setFont(new Font("Ariel", Font.BOLD, 16));
         options.add(solve);
         JButton clear = new JButton("Clear");
+        clear.setFont(new Font("Ariel", Font.BOLD, 16));
         clear.addActionListener(onClear);
         options.add(clear);
     }
@@ -98,7 +101,7 @@ public class SolverGUI {
                     square.setHorizontalAlignment(JTextField.CENTER);
                     square.setMargin(new Insets(0, 0, 0, 0));
                     square.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-                    square.setFont(new Font("SansSerif", Font.BOLD, 20));
+                    square.setFont(new Font("Ariel", Font.BOLD, 20));
                     square.setText("");
     
                     boxes[boxIndex].add(square);
@@ -154,7 +157,6 @@ public class SolverGUI {
         public void actionPerformed(ActionEvent e) {
             JTextField square;
             String input;
-            int result;
             LineBorder errorBorder = new LineBorder(Color.RED, 2);
             hasError = false;
 
@@ -177,9 +179,7 @@ public class SolverGUI {
                 if (val == -1)
                     continue;
 
-                result = solver.setValue(val, i);
-
-                if (result != 0) {
+                if (!solver.setValue(val, i)) {
                     // A collision occured
                     squares[i].setBorder(errorBorder);
                     hasError = true;
