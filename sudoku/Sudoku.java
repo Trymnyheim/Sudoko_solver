@@ -1,7 +1,3 @@
-/*
- * Creates a board object with check-structures to see if an added value fits within the rules.
- * Initialization fails if the width of the inner squares does not fit within the width of the board.
-*/
 
 import java.util.*;
 import java.io.*;
@@ -9,59 +5,59 @@ import java.io.*;
 public class Sudoku {
     
     int[][] board;
-    int size;
-    int innerSize;
+    int SIZE;
+    int INNER;
     HashMap<Integer, HashSet<Integer>> rows = new HashMap<>();
     HashMap<Integer, HashSet<Integer>> cols = new HashMap<>();
     HashMap<Integer, HashSet<Integer>> squares = new HashMap<>();
+    SudokuSolver controller;
 
-    public Sudoku(int size, int innerSize, String filename) {
-        if (size % innerSize != 0) {
-            System.out.println("Width of board does not match width of inner squares.");
-            System.exit(-1);
-        }
+    public Sudoku(int size, int inner, SudokuSolver solver) {
         board = new int[size][size];
-        this.size = size;
-        this.innerSize = innerSize;
-        createBoard(filename);
+        SIZE = size;
+        this.INNER = inner;
+        controller = solver;
+        initBoard();
     }
 
-    private void createBoard(String filename) {
+    private void initBoard() {
+        // Set all values to 0:
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                board[i][j] = 0;
+            }
+        }
         // Initializing check-structures:
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < SIZE; i++) {
             rows.put(i, new HashSet<Integer>());
             cols.put(i, new HashSet<Integer>());
             squares.put(i, new HashSet<Integer>());
         }
-
-        // Read input file and add to board:
-        File file = new File("./files/" + filename);
-        try {
-            Scanner scanner = new Scanner(file);
-            while (scanner.hasNextInt()) {
-                for (int i = 0; i < size; i++) {
-                    for (int j = 0; j < size; j++) {
-                        board[i][j] = scanner.nextInt();
-                    }
-                }
-            }
-            scanner.close();
-        } catch (FileNotFoundException | InputMismatchException e) {
-            System.out.println(e);
-            System.exit(-1);
-        }
-        setChecks();
     }
 
-    // Adds all numbers into their check-structures:
-    private void setChecks() {
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                if (board[i][j] == 0)
-                    continue;
-                addToCheck(i, j);
-            }
-        }
+    public void addToBoard(int value, int i, int j) throws IndexOutOfBoundsException {
+        if (value < 1 || value > SIZE)
+            throw new IllegalArgumentException();
+        if (!checkNumber(value, i, j))
+            throw new InvalidMoveException(value, i, j);
+        board[i][j] = value;
+        addToCheck(i, j);
+    }
+
+    public void removeFromBoard(int i, int j) throws IndexOutOfBoundsException {
+        removeFromChecks(i, j);
+        board[i][j] = 0;
+    }
+
+    // Returns true if a value fits, else false:
+    private boolean checkNumber(int val, int i, int j) {
+        if (rows.get(i).contains(val))
+            return false;
+        if (cols.get(j).contains(val))
+            return false;
+        if (squares.get(getSquare(i, j)).contains(val))
+            return false;
+        return true;
     }
 
     // Adds a single number into check-structures:
@@ -78,46 +74,33 @@ public class Sudoku {
         squares.get(getSquare(i, j)).remove(board[i][j]);
     }
 
-    // Adds number and returns true if possible, if not returns false:
-    public boolean addNumber(int val, int i, int j) {
-        if (!checkNumber(val, i, j)) return false;
-        board[i][j] = val;
-        addToCheck(i, j);
-        return true;
-    }
-
-    // Returns true if a value fits, else false:
-    public boolean checkNumber(int val, int i, int j) {
-        if (rows.get(i).contains(val))
-            return false;
-        if (cols.get(j).contains(val))
-            return false;
-        if (squares.get(getSquare(i, j)).contains(val))
-            return false;
-        return true;
-    }
-
-    // Calculates which inner square indexes are in:
-    public int getSquare(int i, int j) {
-        return (i / innerSize) * innerSize + (j / innerSize);
-    }
-
-    // Solves sudoku with brute-force using recursiveSolve, returns time for solving or -1 if unsolveable:
-    public double solveSudoku() {
-        long start = System.nanoTime();
-        if (recursiveSolve(0, 0)) {
-            long end = System.nanoTime();
-            return (double)(end - start) / 1000000;
+    // Adds all numbers into their check-structures:
+    private void setChecks() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                if (board[i][j] == 0)
+                    continue;
+                addToCheck(i, j);
+            }
         }
-        return -1;
+    }
+
+    public void solveSudoku() {
+        new Thread(() -> {
+            long start = System.nanoTime();
+            boolean solved = recursiveSolve(0, 0);
+            long end = System.nanoTime();
+            double time = (double)(end - start) / 1_000_000;
+            controller.showResults(solved, time);
+        }).start();
     }
 
     public boolean recursiveSolve(int i, int j) {
-        if (i == size) {
+        if (i == SIZE) {
             return true; // Solution found!
         }
-        int next_j = (j + 1) % size;
-        int next_i = (j == size - 1) ? i + 1 : i;
+        int next_j = (j + 1) % SIZE;
+        int next_i = (j == SIZE - 1) ? i + 1 : i;
 
         // If value is set, go to next:
         if (board[i][j] != 0) {
@@ -125,18 +108,55 @@ public class Sudoku {
         }
 
         // Try all combinations and backtrack if necessary:
-        for (int val = 1; val <= size; val++) {
+        for (int val = 1; val <= SIZE; val++) {
             if (checkNumber(val, i, j)) {
-                addNumber(val, i, j);
+                board[i][j] = val;
+                if (controller != null) {
+                    controller.writeValue(val, i, j);
+                    try {
+                        Thread.sleep(10); // Delay for 20 milliseconds
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                addToCheck(i, j);
                 if (recursiveSolve(next_i, next_j)) {
                     return true; // Solution found!              
                 }
                 // Backtracking:
                 removeFromChecks(i, j);
                 board[i][j] = 0;
+                if (controller != null)
+                    controller.clearValue(i, j);
+
             }
         }
         return false;
+    }
+
+    // Calculates which inner square indexes are in:
+    public int getSquare(int i, int j) {
+        return (i / INNER) * INNER + (j / INNER);
+    }
+
+    // Read input file and add to board:
+    public void loadFromFile(String path) {
+        File file = new File(path);
+        try {
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextInt()) {
+                for (int i = 0; i < SIZE; i++) {
+                    for (int j = 0; j < SIZE; j++) {
+                        board[i][j] = scanner.nextInt();
+                    }
+                }
+            }
+            scanner.close();
+        } catch (FileNotFoundException | InputMismatchException e) {
+            System.out.println(e);
+            System.exit(-1);
+        }
+        setChecks();
     }
 
     @Override
@@ -144,7 +164,7 @@ public class Sudoku {
         // Making separator:
         String separator = "\n";
         String doubleSep = "\n";
-        for (int k = 0; k < size; k++) {
+        for (int k = 0; k < SIZE; k++) {
             separator += "------";
             doubleSep += "======";
         }
@@ -152,17 +172,41 @@ public class Sudoku {
         doubleSep += "=\n";
         // Creating board str:
         String printBoard = separator;
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < SIZE; i++) {
             printBoard += "|";
-            for (int j = 0; j < size; j++) {
+            for (int j = 0; j < SIZE; j++) {
                 if (board[i][j] == 0) printBoard += "     ";
                 else printBoard += "  "+ board[i][j] + "  ";
-                if ((j + 1) % innerSize == 0 && j + 1 != size) printBoard += "║";
+                if ((j + 1) % INNER == 0 && j + 1 != SIZE) printBoard += "║";
                 else printBoard += "|";
             }
-            if ((i + 1) % innerSize == 0) printBoard += doubleSep;
+            if ((i + 1) % INNER == 0) printBoard += doubleSep;
             else printBoard += separator;
         }
         return printBoard;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof Sudoku))
+            return false;
+
+        Sudoku other = (Sudoku) obj;
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                if (board[i][j] != other.board[i][j])
+                    return false;
+            }
+        }
+        return true;
+    }
+    
+}
+
+class InvalidMoveException extends RuntimeException {
+    public InvalidMoveException(int value, int i, int j) {
+        super("Number " + value + " does not fit in row " + i + ", column " + j);
     }
 }
