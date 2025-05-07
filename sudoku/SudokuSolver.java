@@ -12,7 +12,6 @@ public class SudokuSolver {
 
     public void run() {
         GUI.openWindow();
-        openPopUp("Test av Pop-Up", "Dette er bare en liten test av pop-up-en!");
     }
 
     public boolean setValue(int val, int id) {

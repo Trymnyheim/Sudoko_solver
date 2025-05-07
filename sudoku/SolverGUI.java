@@ -198,7 +198,7 @@ public class SolverGUI {
             if (!hasError)
                 solver.solve();
             else {
-                // TODO: Give message maybe?
+                solver.openPopUp("Error", "Fix the error marked in red before solving the sudoku.");
             }
         }
     }
