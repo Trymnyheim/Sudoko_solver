@@ -44,6 +44,10 @@ public class Sudoku {
         addToCheck(i, j);
     }
 
+    public int getBoardValue(int i, int j) {
+        return board[i][j];
+    }
+
     public void removeFromBoard(int i, int j) throws IndexOutOfBoundsException {
         if (board[i][j] == 0)
             return;
@@ -87,17 +91,23 @@ public class Sudoku {
         }
     }
 
-    public void solveSudoku() {
+    public void solveSudoku(boolean withVisual) {
+        solveSudoku(0, withVisual);
+    }
+
+    public void solveSudoku(int msDelay, boolean withVisual) {
         new Thread(() -> {
             long start = System.nanoTime();
-            boolean solved = recursiveSolve(0, 0);
+            boolean solved = recursiveSolve(0, 0, msDelay, withVisual);
             long end = System.nanoTime();
             double time = (double)(end - start) / 1_000_000;
+            if (!withVisual)
+                controller.writeAll();
             controller.showResults(solved, time);
         }).start();
     }
 
-    public boolean recursiveSolve(int i, int j) {
+    public boolean recursiveSolve(int i, int j, int msDelay, boolean withVisual) {
         if (i == SIZE) {
             return true; // Solution found!
         }
@@ -106,29 +116,29 @@ public class Sudoku {
 
         // If value is set, go to next:
         if (board[i][j] != 0) {
-            return recursiveSolve(next_i, next_j);
+            return recursiveSolve(next_i, next_j, msDelay, withVisual);
         }
 
         // Try all combinations and backtrack if necessary:
         for (int val = 1; val <= SIZE; val++) {
             if (checkNumber(val, i, j)) {
                 board[i][j] = val;
-                if (controller != null) {
+                if (controller != null && withVisual) {
                     controller.writeValue(val, i, j);
                     try {
-                        Thread.sleep(10); // Delay for 20 milliseconds
+                        Thread.sleep(msDelay); // Delay for 10 milliseconds
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
                 addToCheck(i, j);
-                if (recursiveSolve(next_i, next_j)) {
+                if (recursiveSolve(next_i, next_j, msDelay, withVisual)) {
                     return true; // Solution found!              
                 }
                 // Backtracking:
                 removeFromChecks(i, j);
                 board[i][j] = 0;
-                if (controller != null)
+                if (controller != null && withVisual)
                     controller.clearValue(i, j);
 
             }
@@ -138,7 +148,11 @@ public class Sudoku {
 
     // Calculates which inner square indexes are in:
     public int getSquare(int i, int j) {
-        return (i / INNER) * INNER + (j / INNER);
+        if (SIZE == 9)
+            return (i / 3) * 3 + (j / 3);
+        if (SIZE == 16)
+            return (i / 4) * 4 + (j / 4);
+        return 0;
     }
 
     // Read input file and add to board:

@@ -14,6 +14,7 @@ public class SolverGUI {
     private OnSolve onSolve;
     private OnClear onClear;
     private JTextField[] squares;
+    private JCheckBox withVisual;
     private static int SQSIZE = 50;
     private boolean hasError = false;
 
@@ -61,10 +62,14 @@ public class SolverGUI {
         solve.addActionListener(onSolve);
         solve.setFont(new Font("Ariel", Font.BOLD, 16));
         options.add(solve);
+
         JButton clear = new JButton("Clear");
         clear.setFont(new Font("Ariel", Font.BOLD, 16));
         clear.addActionListener(onClear);
         options.add(clear);
+
+        withVisual = new JCheckBox("With Visuals");
+        options.add(withVisual);
     }
 
     public void showSudoku() {
@@ -196,7 +201,7 @@ public class SolverGUI {
             onEnter.actionPerformed(e); // Insert all values from textfields
             // Solve if no errors:
             if (!hasError)
-                solver.solve();
+                solver.solve(withVisual.isSelected());
             else {
                 solver.openPopUp("Error", "Fix the error marked in red before solving the sudoku.");
             }

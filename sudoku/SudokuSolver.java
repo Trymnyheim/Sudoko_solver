@@ -10,8 +10,16 @@ public class SudokuSolver {
         sudoku = new Sudoku(SIZE, this);
     }
 
+    public SudokuSolver(String filename, int size) {
+        SIZE = size;
+        GUI = new SolverGUI(this, SIZE);
+        sudoku = new Sudoku(SIZE, this);
+        sudoku.loadFromFile(filename);
+    }
+
     public void run() {
         GUI.openWindow();
+        writeAll();
     }
 
     public boolean setValue(int val, int id) {
@@ -29,7 +37,18 @@ public class SudokuSolver {
 
     // Writes a value to GUI
     public void writeValue(int val, int i, int j) {
-        GUI.writeValue(getIndex(i, j), val);
+        if (val >= 1 && val <= SIZE)
+            GUI.writeValue(getIndex(i, j), val);
+    }
+
+    public void writeAll() {
+        int val;
+        for (int i = 0; i < SIZE; i ++) {
+            for (int j = 0; j < SIZE; j++) {
+                val = sudoku.getBoardValue(i, j);
+                writeValue(val, i, j);
+            }
+        }
     }
 
     // Clears a value from GUI
@@ -52,8 +71,8 @@ public class SudokuSolver {
     }
 
     // Solves the sudoku
-    public void solve() {
-        sudoku.solveSudoku();
+    public void solve(boolean withVisual) {
+        sudoku.solveSudoku(withVisual);
     }
 
     // TODO: Show a pop-up with solving time.
