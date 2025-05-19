@@ -78,9 +78,10 @@ public class SudokuSolver {
     // TODO: Show a pop-up with solving time.
     public void showResults(boolean solved, Double time) {
         if (solved)
-            System.out.println(time);
+            openPopUp("Finished!", "Solved in " + time + "ms??");
         else
-            System.out.println("Unable to solve");
+            openPopUp("Error!", "Unable to solve");
+
     }
 
     // TODO: Display a pop-up with a message!
