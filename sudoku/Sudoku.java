@@ -15,7 +15,6 @@ public class Sudoku {
     public Sudoku(int size, SudokuSolver solver) {
         board = new int[size][size];
         SIZE = size;
-        this.INNER = 3; // TODO: SORT OUT THE DIMENSIONS OF 12 x 12 and 16 x 16!!
         controller = solver;
         initBoard();
     }
@@ -92,7 +91,7 @@ public class Sudoku {
     }
 
     public void solveSudoku(boolean withVisual) {
-        solveSudoku(0, withVisual);
+        solveSudoku(5, withVisual);
     }
 
     public void solveSudoku(int msDelay, boolean withVisual) {
@@ -150,58 +149,29 @@ public class Sudoku {
     public int getSquare(int i, int j) {
         if (SIZE == 9)
             return (i / 3) * 3 + (j / 3);
+        if (SIZE == 12)
+            return (i / 3) * 3 + (j / 4);
         if (SIZE == 16)
             return (i / 4) * 4 + (j / 4);
         return 0;
     }
 
     // Read input file and add to board:
-    public void loadFromFile(String path) {
+    public void loadFromFile(String path) throws FileNotFoundException, InputMismatchException  {
         File file = new File(path);
-        try {
-            Scanner scanner = new Scanner(file);
-            while (scanner.hasNextInt()) {
-                for (int i = 0; i < SIZE; i++) {
-                    for (int j = 0; j < SIZE; j++) {
-                        board[i][j] = scanner.nextInt();
-                    }
+        Scanner scanner = new Scanner(file);
+        while (scanner.hasNextInt()) {
+            for (int i = 0; i < SIZE; i++) {
+                for (int j = 0; j < SIZE; j++) {
+                    board[i][j] = scanner.nextInt();
                 }
             }
-            scanner.close();
-        } catch (FileNotFoundException | InputMismatchException e) {
-            System.out.println(e);
-            System.exit(-1);
         }
+        scanner.close();
         setChecks();
     }
 
-    @Override
-    public String toString() {
-        // Making separator:
-        String separator = "\n";
-        String doubleSep = "\n";
-        for (int k = 0; k < SIZE; k++) {
-            separator += "------";
-            doubleSep += "======";
-        }
-        separator += "-\n";
-        doubleSep += "=\n";
-        // Creating board str:
-        String printBoard = separator;
-        for (int i = 0; i < SIZE; i++) {
-            printBoard += "|";
-            for (int j = 0; j < SIZE; j++) {
-                if (board[i][j] == 0) printBoard += "     ";
-                else printBoard += "  "+ board[i][j] + "  ";
-                if ((j + 1) % INNER == 0 && j + 1 != SIZE) printBoard += "║";
-                else printBoard += "|";
-            }
-            if ((i + 1) % INNER == 0) printBoard += doubleSep;
-            else printBoard += separator;
-        }
-        return printBoard;
-    }
-
+    // For checking if two boards are the same
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

@@ -1,8 +1,12 @@
+import java.io.FileNotFoundException;
+import java.util.InputMismatchException;
+
 public class SudokuSolver {
     
     private SolverGUI GUI;
     private Sudoku sudoku;
     private int SIZE;
+    private boolean hasError = false;
 
     public SudokuSolver() {
         SIZE = 9;
@@ -10,14 +14,31 @@ public class SudokuSolver {
         sudoku = new Sudoku(SIZE, this);
     }
 
-    public SudokuSolver(String filename, int size) {
+        public SudokuSolver(int size) {
         SIZE = size;
         GUI = new SolverGUI(this, SIZE);
         sudoku = new Sudoku(SIZE, this);
-        sudoku.loadFromFile(filename);
+    }
+
+    // Loads sudoku from file
+    // returns true if success, displays error message and returns false if error
+    public void loadFromFile(String filename) throws FileNotFoundException, InputMismatchException {
+        try {
+            sudoku.loadFromFile(filename);
+        } catch (FileNotFoundException e) {
+            openPopUp("File not found", "Unable to find file with name \"" + filename + "\".", true);
+            hasError = true;
+            throw new FileNotFoundException("Unable to find file with name \"" + filename + "\".");
+        } catch (InputMismatchException e) {
+            openPopUp("Error", "The sudoku in file with name \"" + filename + "\"contains and error.", true);
+            hasError = true;
+            throw new InputMismatchException("Error in sudoku");
+        }
     }
 
     public void run() {
+        if (hasError)
+            return;
         GUI.openWindow();
         writeAll();
     }
@@ -75,18 +96,19 @@ public class SudokuSolver {
         sudoku.solveSudoku(withVisual);
     }
 
-    // TODO: Show a pop-up with solving time.
+    // Show a pop-up with solving time, error message if unsuccessful
+    // TODO: Is it ms?
     public void showResults(boolean solved, Double time) {
         if (solved)
-            openPopUp("Finished!", "Solved in " + time + "ms??");
+            openPopUp("Finished!", "Solved in " + time + "ms.", false);
         else
-            openPopUp("Error!", "Unable to solve");
+            openPopUp("Error!", "Unable to solve sudoku.", false);
 
     }
 
-    // TODO: Display a pop-up with a message!
-    public void openPopUp(String title, String message) {
-        PopUp popUp = new PopUp(title, message);
+    // Display a pop-up with a message!
+    public void openPopUp(String title, String message, boolean withClose) {
+        PopUp popUp = new PopUp(title, message, withClose);
         popUp.openPopUp();
     } 
 

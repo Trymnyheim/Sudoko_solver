@@ -8,12 +8,14 @@ public class PopUp {
     private final String MSG;   // Message of pop-up
     private JFrame frame;
     private JPanel panel;
+    private boolean withClose;
 
-    public PopUp(String title, String message) {
+    public PopUp(String title, String message, boolean withClose) {
         TITLE = title;
         MSG = message;
         frame = new JFrame(TITLE);
         panel = new JPanel();
+        this.withClose = withClose;
     }
 
     public void openPopUp() {
@@ -33,7 +35,11 @@ public class PopUp {
         panel.add(title);
         panel.add(msg);
 
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        if (withClose) {
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        } else {
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        }
         frame.setSize(400, 200);
         frame.add(panel, BorderLayout.CENTER);
         frame.pack();

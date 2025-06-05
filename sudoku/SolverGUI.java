@@ -203,7 +203,7 @@ public class SolverGUI {
             if (!hasError)
                 solver.solve(withVisual.isSelected());
             else {
-                solver.openPopUp("Error", "Fix the error marked in red before solving the sudoku.");
+                solver.openPopUp("Error", "Fix the error marked in red before solving the sudoku.", false);
             }
         }
     }
