@@ -19,7 +19,6 @@ public class Main {
             System.out.println("Usage: java Main <File name> <Size>");
             return;
         }
-        System.out.println("Hei");
         solver.run();
     }
 }

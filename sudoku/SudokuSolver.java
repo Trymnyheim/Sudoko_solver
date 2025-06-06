@@ -43,6 +43,7 @@ public class SudokuSolver {
         writeAll();
     }
 
+    // Adds value from GUI to sudoku-object
     public boolean setValue(int val, int id) {
         int row = id / SIZE;
         int col = id % SIZE;
@@ -50,7 +51,6 @@ public class SudokuSolver {
         try {
             sudoku.addToBoard(val, row, col);
         } catch (InvalidMoveException e) {
-            System.out.println(e.getMessage());
             return false;
         }
         return true;
@@ -62,6 +62,7 @@ public class SudokuSolver {
             GUI.writeValue(getIndex(i, j), val);
     }
 
+    // Writes all values to GUI
     public void writeAll() {
         int val;
         for (int i = 0; i < SIZE; i ++) {
@@ -97,13 +98,11 @@ public class SudokuSolver {
     }
 
     // Show a pop-up with solving time, error message if unsuccessful
-    // TODO: Is it ms?
     public void showResults(boolean solved, Double time) {
         if (solved)
             openPopUp("Finished!", "Solved in " + time + "ms.", false);
         else
             openPopUp("Error!", "Unable to solve sudoku.", false);
-
     }
 
     // Display a pop-up with a message!
