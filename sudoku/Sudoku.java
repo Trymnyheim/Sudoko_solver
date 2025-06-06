@@ -5,7 +5,6 @@ public class Sudoku {
     
     int[][] board;
     int SIZE;
-    int INNER;
     HashMap<Integer, HashSet<Integer>> rows = new HashMap<>();
     HashMap<Integer, HashSet<Integer>> cols = new HashMap<>();
     HashMap<Integer, HashSet<Integer>> squares = new HashMap<>();
