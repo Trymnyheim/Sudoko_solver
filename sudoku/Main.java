@@ -1,3 +1,5 @@
+import java.util.NoSuchElementException;
+
 public class Main {
     public static void main(String[] args) {
         SudokuSolver solver;
@@ -10,8 +12,11 @@ public class Main {
             } catch (NumberFormatException e) {
                 System.out.println("Usage: java Main <File name> <Size>");
                 return;
+            } catch (NoSuchElementException e) {
+                System.out.println("Size does not match size of sudoku from file \"" + args[0] + "\"");
+                return;
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                System.out.println(e);
                 return;
             }
         }
